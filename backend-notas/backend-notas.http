@@ -1,0 +1,6 @@
+@backend_notas_HostAddress = http://localhost:5150
+
+GET {{backend_notas_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
