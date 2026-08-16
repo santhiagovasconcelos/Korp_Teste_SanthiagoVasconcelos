@@ -6,6 +6,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
+//Chamando a api de produtos para pegar dados do produto. 
+builder.Services.AddHttpClient("ProdutosApi", client =>
+{
+    client.BaseAddress = new Uri("http://localhost:5019");
+});
+
 builder.Services.AddDbContext<NotasDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("NotasDatabase")));
