@@ -385,4 +385,83 @@ public class NotasController : ControllerBase
             nota.Status
         });
     }
+
+
+
+    [HttpPost("{id}/cancelar")]
+    public async Task<IActionResult> CancelarNota(int id)
+    {
+        var nota = await _context.NotasFiscais
+            .Include(n => n.Itens)
+            .FirstOrDefaultAsync(n => n.Id == id);
+
+        if (nota == null)
+        {
+            return NotFound("Nota fiscal não encontrada.");
+        }
+
+        if (nota.Status == "Cancelada")
+        {
+            return BadRequest("A nota fiscal já está cancelada.");
+        }
+
+        // Nota ainda aberta: não houve movimentação de estoque. Pode ser feito o cancelamento direto
+        if (nota.Status == "Aberta")
+        {
+            nota.Status = "Cancelada";
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                nota.Id,
+                numero = nota.Numero.ToString("D9"),
+                nota.Status
+            });
+        }
+
+        // Nota processada: os estoques precisam ser estornados antes do cancelamento.
+        if (nota.Status == "Processada")
+        {
+            var client = _httpClientFactory.CreateClient("ProdutosApi");
+
+            var referencia = $"Nota {nota.Numero:D9}";
+
+            foreach (var item in nota.Itens)
+            {
+                var estornoRequest = new
+                {
+                    ProdutoId = item.ProdutoId,
+                    Referencia = referencia
+                };
+
+                var response = await client.PostAsJsonAsync(
+                    "/api/estoque/estorno",
+                    estornoRequest);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return BadRequest(
+                        $"Não foi possível estornar o estoque do produto {item.CodigoProduto}.");
+                }
+            }
+
+            nota.Status = "Cancelada";
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                nota.Id,
+                numero = nota.Numero.ToString("D9"),
+                nota.Status
+            });
+        }
+
+        return BadRequest("Status da nota fiscal inválido.");
+    }
+
+
+
+
 }
