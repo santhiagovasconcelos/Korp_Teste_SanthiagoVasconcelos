@@ -66,7 +66,8 @@ public class ProdutosController : ControllerBase
         produtoExistente.Codigo = produto.Codigo;
         produtoExistente.Descricao = produto.Descricao;
         produtoExistente.Preco = produto.Preco;
-        produtoExistente.Saldo = produto.Saldo;
+        //Quem vai controlar o saldo é o módulo de Estoque.
+        //produtoExistente.Saldo = produto.Saldo; 
 
         await _context.SaveChangesAsync();
 

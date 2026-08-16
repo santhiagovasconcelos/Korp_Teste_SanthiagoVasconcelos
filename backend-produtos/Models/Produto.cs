@@ -9,5 +9,5 @@ public class Produto
     public decimal Preco { get; set; }
     public int Saldo { get; set; }
     public bool Ativo { get; set; } = true;
-
+    public List<MovimentacaoEstoque> Movimentacoes { get; set; } = new();
 }
