@@ -297,4 +297,92 @@ public class NotasController : ControllerBase
 
         return NoContent();
     }
+
+    [HttpPost("{id}/processar")]
+    public async Task<IActionResult> ProcessarNota(int id)
+    {
+        // Busca a nota e seus itens para realizar o processamento.
+        var nota = await _context.NotasFiscais
+            .Include(n => n.Itens)
+            .FirstOrDefaultAsync(n => n.Id == id);
+
+        if (nota == null)
+        {
+            return NotFound("Nota fiscal não encontrada.");
+        }
+
+        // Somente notas abertas podem gerar movimentação de estoque.
+        if (nota.Status != "Aberta")
+        {
+            return BadRequest("Somente notas abertas podem ser processadas.");
+        }
+
+        if (!nota.Itens.Any())
+        {
+            return BadRequest("A nota fiscal não possui itens.");
+        }
+
+        // Cria o cliente HTTP utilizado para comunicação com o backend-produtos.
+        var client = _httpClientFactory.CreateClient("ProdutosApi");
+
+        var referencia = $"Nota {nota.Numero:D9}";
+
+
+        // Armazena somente os itens cuja baixa foi realizada com sucesso.
+        // Essa lista será usada para compensação caso uma baixa posterior falhe.
+        var itensBaixados = new List<ItemNota>();
+
+        foreach (var item in nota.Itens)
+        {
+            // Monta a solicitação de baixa que será enviada ao backend-produtos.
+            var request = new BaixaEstoqueRequest
+            {
+                ProdutoId = item.ProdutoId,
+                Quantidade = item.Quantidade,
+                Referencia = referencia
+            };
+
+            // Solicita ao microserviço de produtos a baixa do estoque deste item.
+            var response = await client.PostAsJsonAsync(
+                "/api/estoque/baixa",
+                request);
+            
+            // Se alguma baixa falhar, desfaz as baixas realizadas anteriormente.
+            // Isso evita deixar o estoque parcialmente movimentado enquanto
+            // a nota permanece com status Aberta.
+            if (!response.IsSuccessStatusCode)
+            {
+                foreach (var itemBaixado in itensBaixados)
+                 {
+                    var estornoRequest = new
+                    {
+                        ProdutoId = itemBaixado.ProdutoId,
+                        Referencia = referencia
+                    };
+
+                    await client.PostAsJsonAsync(
+                        "/api/estoque/estorno",
+                        estornoRequest);
+                }
+
+                return BadRequest(
+                $"Não foi possível baixar o estoque do produto {item.CodigoProduto}. As baixas anteriores foram estornadas.");
+    
+            }
+            //adicionando itens para confirmar a baixa
+            itensBaixados.Add(item);
+        }
+
+        // Somente após todas as baixas terem sucesso a nota é considerada processada.
+        nota.Status = "Processada";
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            nota.Id,
+            numero = nota.Numero.ToString("D9"),
+            nota.Status
+        });
+    }
 }
