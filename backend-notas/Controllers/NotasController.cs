@@ -20,6 +20,43 @@ public class NotasController : ControllerBase
         _httpClientFactory = httpClientFactory;
     }
 
+    //Carregar notas
+    [HttpGet]
+    public async Task<IActionResult> Get()
+    {
+        var notas = await _context.NotasFiscais
+            .Include(n => n.Cliente)
+            .Include(n => n.Empresa)
+            .Include(n => n.Itens)
+            .OrderByDescending(n => n.Numero)
+            .ToListAsync();
+
+        return Ok(notas.Select(n => new
+        {
+            n.Id,
+            numero = n.Numero.ToString("D9"),
+            n.DataEmissao,
+            n.Status,
+
+            cliente = new
+            {
+                n.Cliente.Id,
+                n.Cliente.Nome
+            },
+
+            empresa = new
+            {
+                n.Empresa.Id,
+                n.Empresa.RazaoSocial
+            },
+
+            quantidadeItens = n.Itens.Count,
+
+            valorTotal = n.Itens.Sum(i =>
+                i.Quantidade * i.ValorUnitario)
+        }));
+    }
+
     [HttpPost]
     public async Task<IActionResult> Post(CriarNotaRequest request)
     {
@@ -69,6 +106,7 @@ public class NotasController : ControllerBase
             });
     }
 
+    //carregar nota por id
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
@@ -117,7 +155,7 @@ public class NotasController : ControllerBase
         });
     }
 
-
+    //Adicionar item direto na nota com status aberta
     [HttpPost("{id}/itens")]
     public async Task<IActionResult> AdicionarItem(int id, AdicionarItemRequest request)
     {

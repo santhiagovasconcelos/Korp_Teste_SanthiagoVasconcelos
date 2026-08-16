@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
-//Chamando a api de produtos para pegar dados do produto. 
+//Chamando a API de produtos para obter dados do produto. 
 builder.Services.AddHttpClient("ProdutosApi", client =>
 {
     client.BaseAddress = new Uri("http://localhost:5019");
@@ -15,6 +15,16 @@ builder.Services.AddHttpClient("ProdutosApi", client =>
 builder.Services.AddDbContext<NotasDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("NotasDatabase")));
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngular", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
 var app = builder.Build();
 
@@ -25,6 +35,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowAngular");
 
 app.MapControllers();
 
