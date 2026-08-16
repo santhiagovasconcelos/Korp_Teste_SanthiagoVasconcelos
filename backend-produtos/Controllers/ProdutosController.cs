@@ -25,6 +25,19 @@ public class ProdutosController : ControllerBase
         return Ok(produtos);
     }
 
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(int id)
+    {
+        var produto = await _context.Produtos.FindAsync(id);
+
+        if(produto == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(produto);
+    }
+
     [HttpPost]
     public async Task<IActionResult> Post(Produto produto)
     {
@@ -32,6 +45,29 @@ public class ProdutosController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(Get), new { id = produto.Id }, produto);
+        return CreatedAtAction( 
+            nameof (GetById), 
+            new { id = produto.Id }, 
+            produto);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Put(int id, Produto produto)
+    {
+        var produtoExistente = await _context.Produtos.FindAsync(id);
+
+        if(produtoExistente == null)
+        {
+            return NotFound();
+        }
+
+        produtoExistente.Codigo = produto.Codigo;
+        produtoExistente.Descricao = produto.Descricao;
+        produtoExistente.Preco = produto.Preco;
+        produtoExistente.Saldo = produto.Saldo;
+
+        await _context.SaveChangesAsync();
+
+        return NoContent();
     }
 }
