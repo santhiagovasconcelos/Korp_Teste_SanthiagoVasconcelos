@@ -1,6 +1,6 @@
 namespace backend_produtos.Dtos;
 
-public class MovimentacaoEstoqueRequest
+public class BaixaEstoqueRequest
 {
     public int ProdutoId { get; set; }
     public int Quantidade { get; set; }
