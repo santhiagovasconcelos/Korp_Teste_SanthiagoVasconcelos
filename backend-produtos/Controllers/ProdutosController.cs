@@ -20,7 +20,7 @@ public class ProdutosController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> Get()
     {
-        var produtos = await _context.Produtos.ToListAsync();
+        var produtos = await _context.Produtos.Where(p => p.Ativo).ToListAsync();
 
         return Ok(produtos);
     }
@@ -28,7 +28,9 @@ public class ProdutosController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var produto = await _context.Produtos.FindAsync(id);
+        //Retornando apenas se o item estiver ativo
+        var produto = await _context.Produtos
+            .FirstOrDefaultAsync(p => p.Id == id && p.Ativo);
 
         if(produto == null)
         {
@@ -65,6 +67,23 @@ public class ProdutosController : ControllerBase
         produtoExistente.Descricao = produto.Descricao;
         produtoExistente.Preco = produto.Preco;
         produtoExistente.Saldo = produto.Saldo;
+
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var produto = await _context.Produtos.FindAsync(id);
+
+        if(produto == null)
+        {
+            return NotFound();
+        }
+
+        produto.Ativo = false;
 
         await _context.SaveChangesAsync();
 
