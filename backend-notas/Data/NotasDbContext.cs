@@ -34,17 +34,18 @@ public class NotasDbContext : DbContext
             .WithMany(n => n.Itens)
             .HasForeignKey(i => i.NotaFiscalId)
             .OnDelete(DeleteBehavior.Cascade);
-        
+
         modelBuilder.Entity<NotaFiscal>()
             .HasIndex(n => n.Numero)
             .IsUnique();
 
-        //seed de dados - Lembrar de avaliar inclusão de endpoint para adicionar Empresa e Cliente.
+
+        // Dados iniciais para demonstração do sistema
         modelBuilder.Entity<Empresa>().HasData(
             new Empresa
             {
-                Id = -1,
-                RazaoSocial = "Korp ERP Demo Ltda",
+                Id = 1,
+                RazaoSocial = "Empresa Demonstração Ltda.",
                 Cnpj = "12345678000199"
             }
         );
@@ -52,21 +53,33 @@ public class NotasDbContext : DbContext
         modelBuilder.Entity<Cliente>().HasData(
             new Cliente
             {
-                Id = -1,
-                Nome = "Cliente Teste 1",
+                Id = 1,
+                Nome = "João da Silva",
                 Documento = "11111111111"
             },
             new Cliente
             {
-                Id = -2,
-                Nome = "Cliente Teste 2",
+                Id = 2,
+                Nome = "Maria Oliveira",
                 Documento = "22222222222"
             },
             new Cliente
             {
-                Id = -3,
-                Nome = "Cliente Teste 3",
+                Id = 3,
+                Nome = "Carlos Almeida",
                 Documento = "33333333333"
+            },
+            new Cliente
+            {
+                Id = 4,
+                Nome = "Ana Souza",
+                Documento = "44444444444"
+            },
+            new Cliente
+            {
+                Id = 5,
+                Nome = "Rafael Santos",
+                Documento = "55555555555"
             }
         );
     }
