@@ -58,4 +58,12 @@ export class NotaFiscalService {
   removerItem(notaId: number, itemId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${notaId}/itens/${itemId}`);
   }
+
+  processar(id: number): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/${id}/processar`, {});
+  }
+
+  cancelar(id: number): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/${id}/cancelar`, {});
+  }
 }

@@ -88,8 +88,24 @@
   <p>Status: {{ nota.status }}</p>
   <p>Cliente: {{ nota.cliente.nome }}</p>
   <p>Empresa: {{ nota.empresa.razaoSocial }}</p>
-
+    @if (nota.status !== 'Cancelada') {
+        <button
+            type="button"
+            (click)="cancelarNota()"
+        >
+            Cancelar Nota
+        </button>
+    }
     @if (nota.status === 'Aberta') {
+        @if (nota.status === 'Aberta') {
+            <button
+            type="button"
+            (click)="processarNota()"
+            >
+            Processar Nota
+            </button>
+        }
+        
         <h3>Adicionar Item</h3>
 
         <form (ngSubmit)="adicionarItem()">
@@ -100,6 +116,7 @@
                 id="produto"
                 name="produto"
                 [(ngModel)]="produtoId"
+                (ngModelChange)="produtoAlterado($event)"//Usado para o RxJS
                 required
                 >
                 <option [ngValue]="0">Selecione um produto</option>
@@ -116,16 +133,39 @@
                 <label for="quantidade">Quantidade</label>
 
                 <input
-                id="quantidade"
-                name="quantidade"
-                type="number"
-                min="1"
-                [(ngModel)]="quantidade"
-                required
+                    id="quantidade"
+                    name="quantidade"
+                    type="number"
+                    min="1"
+                    [(ngModel)]="quantidade"
+                    (ngModelChange)="validarQuantidade()"//Usado para o RxJS
+                    required
                 >
-            </div>
 
-            <button type="submit">Adicionar Item</button>
+                @if (saldoProduto) {
+                    <p>Saldo em estoque: {{ saldoProduto.saldo }}</p>
+
+                    @if (quantidadeJaNaNota() > 0) {
+                        <p>Quantidade já na nota: {{ quantidadeJaNaNota() }}</p>
+                    }
+
+                    <p>
+                        Disponível para adicionar:
+                        {{ saldoDisponivelParaAdicionar() }}
+                    </p>
+
+                    @if (!saldoSuficiente) {
+                        <p>Saldo insuficiente para a quantidade informada.</p>
+                    }
+                }
+            </div>
+            
+            <button
+                type="submit"
+                [disabled]="!saldoSuficiente"
+            >
+                Adicionar Item
+            </button>
         </form>
     }
 

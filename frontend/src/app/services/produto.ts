@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { Produto } from '../models/produto';
+import { SaldoEstoque } from '../models/saldo-estoque';
 
 @Injectable({
   providedIn: 'root',
@@ -26,5 +27,9 @@ export class ProdutoService {
 
   excluir(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  consultarSaldo(produtoId: number): Observable<SaldoEstoque> {
+    return this.http.get<SaldoEstoque>(`http://localhost:5019/api/Estoque/${produtoId}`);
   }
 }

@@ -8,6 +8,9 @@ import { Empresa } from '../models/empresa';
 import { Produto } from '../models/produto';
 import { ProdutoService } from '../services/produto';
 import { ItemNota } from '../models/item-nota';
+//importando o RxJS para função dentro da consulta do saldo do estoque
+import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
+import { SaldoEstoque } from '../models/saldo-estoque';
 
 @Component({
   selector: 'app-notas-fiscais',
@@ -27,7 +30,7 @@ export class NotasFiscais implements OnInit {
   produtos = signal<Produto[]>([]);
 
   produtoId = 0;
-  quantidade = 1;
+  quantidade = 0;
 
   constructor(
     private notaFiscalService: NotaFiscalService,
@@ -36,11 +39,35 @@ export class NotasFiscais implements OnInit {
 
   notaSelecionada = signal<NotaFiscalDetalhe | null>(null);
 
+  saldoProduto: SaldoEstoque | null = null;
+  saldoSuficiente = false;
+
+  //Variável do RxJS
+  private produtoSelecionado$ = new Subject<number>();
+
   ngOnInit(): void {
     this.carregarNotas();
     this.carregarClientes();
     this.carregarEmpresas();
     this.carregarProdutos();
+
+    this.produtoSelecionado$
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap((produtoId) => this.produtoService.consultarSaldo(produtoId)),
+      )
+      .subscribe({
+        next: (saldo) => {
+          this.saldoProduto = saldo;
+          this.validarQuantidade();
+        },
+        error: (erro) => {
+          console.error('Erro ao consultar saldo:', erro);
+          this.saldoProduto = null;
+          this.saldoSuficiente = false;
+        },
+      });
   }
 
   carregarClientes(): void {
@@ -269,5 +296,120 @@ export class NotasFiscais implements OnInit {
         alert(mensagem);
       },
     });
+  }
+
+  processarNota(): void {
+    const nota = this.notaSelecionada();
+
+    if (!nota || nota.status !== 'Aberta') {
+      return;
+    }
+
+    if (nota.itens.length === 0) {
+      alert('A nota precisa possuir pelo menos um item para ser processada.');
+      return;
+    }
+
+    const confirmar = confirm(`Deseja realmente processar a nota ${nota.numero}?`);
+
+    if (!confirmar) {
+      return;
+    }
+
+    this.notaFiscalService.processar(nota.id).subscribe({
+      next: () => {
+        this.carregarNotas();
+        this.verDetalhes(nota.id);
+
+        alert('Nota processada com sucesso.');
+      },
+      error: (erro) => {
+        console.error('Erro ao processar nota:', erro);
+
+        const mensagem =
+          typeof erro.error === 'string'
+            ? erro.error
+            : (erro.error?.message ?? 'Não foi possível processar a nota.');
+
+        alert(mensagem);
+      },
+    });
+  }
+
+  cancelarNota(): void {
+    const nota = this.notaSelecionada();
+
+    if (!nota || nota.status === 'Cancelada') {
+      return;
+    }
+
+    const confirmar = confirm(`Deseja realmente cancelar a nota ${nota.numero}?`);
+
+    if (!confirmar) {
+      return;
+    }
+
+    this.notaFiscalService.cancelar(nota.id).subscribe({
+      next: () => {
+        this.carregarNotas();
+        this.verDetalhes(nota.id);
+
+        alert('Nota cancelada com sucesso.');
+      },
+      error: (erro) => {
+        console.error('Erro ao cancelar nota:', erro);
+
+        const mensagem =
+          typeof erro.error === 'string'
+            ? erro.error
+            : (erro.error?.message ?? 'Não foi possível cancelar a nota.');
+
+        alert(mensagem);
+      },
+    });
+  }
+  //verificar produto alterado para poder usar o RxJS
+  produtoAlterado(produtoId: number): void {
+    this.produtoId = produtoId;
+    this.saldoProduto = null;
+    this.saldoSuficiente = false;
+
+    if (produtoId) {
+      this.produtoSelecionado$.next(produtoId);
+    }
+  }
+
+  validarQuantidade(): void {
+    if (!this.saldoProduto) {
+      this.saldoSuficiente = false;
+      return;
+    }
+
+    const nota = this.notaSelecionada();
+
+    const itemExistente = nota?.itens.find((item) => item.produtoId === this.produtoId);
+    //Se o produto já existir nos itens,
+    // o saldo deve levar em consideração na contagem do saldo
+    const quantidadeNaNota = itemExistente?.quantidade ?? 0;
+
+    const saldoDisponivel = this.saldoProduto.saldo - quantidadeNaNota;
+
+    this.saldoSuficiente = this.quantidade > 0 && this.quantidade <= saldoDisponivel;
+  }
+
+  quantidadeJaNaNota(): number {
+    const nota = this.notaSelecionada();
+
+    const item = nota?.itens.find((item) => item.produtoId === this.produtoId);
+
+    return item?.quantidade ?? 0;
+  }
+
+  saldoDisponivelParaAdicionar(): number {
+    if (!this.saldoProduto) {
+      return 0;
+    }
+
+    return this.saldoProduto.saldo - this.quantidadeJaNaNota();
   }
 }
