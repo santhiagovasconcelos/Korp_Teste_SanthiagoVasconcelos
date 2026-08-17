@@ -1,1 +1,100 @@
-<p>produtos works!</p>
+<h1>Produtos</h1>
+
+<h2>Novo Produto</h2>
+
+<form (ngSubmit)="salvarProduto()">
+
+  <div>
+    <label for="codigo">Código</label>
+    <input
+      id="codigo"
+      name="codigo"
+      type="text"
+      [(ngModel)]="novoProduto.codigo"
+      required>
+  </div>
+
+  <div>
+    <label for="descricao">Descrição</label>
+    <input
+      id="descricao"
+      name="descricao"
+      type="text"
+      [(ngModel)]="novoProduto.descricao"
+      required>
+  </div>
+
+  <div>
+    <label for="preco">Preço</label>
+    <input
+      id="preco"
+      name="preco"
+      type="number"
+      step="0.01"
+      [(ngModel)]="novoProduto.preco"
+      required>
+  </div>
+
+  <div>
+    <label for="saldo">Saldo inicial</label>
+    <input
+      id="saldo"
+      name="saldo"
+      type="number"
+      [(ngModel)]="novoProduto.saldo"
+      required>
+  </div>
+
+  <div>
+    <label>
+      <input
+        name="ativo"
+        type="checkbox"
+        [(ngModel)]="novoProduto.ativo">
+      Ativo
+    </label>
+  </div>
+
+  <button type="submit">
+    {{ produtoEmEdicao ? 'Salvar Alterações' : 'Cadastrar' }}
+  </button>
+
+</form>
+
+<table>
+  <thead>
+    <tr>
+      <th>Código</th>
+      <th>Descrição</th>
+      <th>Preço</th>
+      <th>Saldo</th>
+      <th>Status</th>
+      <th>Ações</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    @for (produto of produtos(); track produto.id) {
+      <tr>
+        <td>{{ produto.codigo }}</td>
+        <td>{{ produto.descricao }}</td>
+        <td>{{ produto.preco }}</td>
+        <td>{{ produto.saldo }}</td>
+        <td>{{ produto.ativo ? 'Ativo' : 'Inativo' }}</td>
+        <td>
+          <button
+            type="button"
+            (click)="editarProduto(produto)">
+            Editar
+          </button>
+          
+          <button
+            type="button"
+            (click)="excluirProduto(produto)">
+            Excluir
+          </button>
+        </td>
+      </tr>
+    }
+  </tbody>
+</table>
