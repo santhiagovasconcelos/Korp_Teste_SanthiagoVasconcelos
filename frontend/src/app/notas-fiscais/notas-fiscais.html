@@ -1,1 +1,175 @@
-<p>notas-fiscais works!</p>
+<h1>Notas Fiscais</h1>
+
+<h2>Nova Nota Fiscal</h2>
+
+<form (ngSubmit)="criarNota()">
+  <div>
+    <label for="cliente">Cliente</label>
+
+    <select
+      id="cliente"
+      name="cliente"
+      [(ngModel)]="clienteId"
+      required
+    >
+      <option [ngValue]="0">Selecione um cliente</option>
+
+      @for (cliente of clientes(); track cliente.id) {
+        <option [ngValue]="cliente.id">
+          {{ cliente.nome }}
+        </option>
+      }
+    </select>
+  </div>
+
+  <div>
+    <label for="empresa">Empresa</label>
+
+    <select
+      id="empresa"
+      name="empresa"
+      [(ngModel)]="empresaId"
+      required
+    >
+      <option [ngValue]="0">Selecione uma empresa</option>
+
+      @for (empresa of empresas(); track empresa.id) {
+        <option [ngValue]="empresa.id">
+          {{ empresa.razaoSocial }}
+        </option>
+      }
+    </select>
+  </div>
+
+  <button type="submit">Criar Nota</button>
+</form>
+
+<table>
+  <thead>
+    <tr>
+      <th>Número</th>
+      <th>Data</th>
+      <th>Cliente</th>
+      <th>Empresa</th>
+      <th>Itens</th>
+      <th>Valor Total</th>
+      <th>Status</th>
+      <th>Ações</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    @for (nota of notas(); track nota.id) {
+      <tr>
+        <td>{{ nota.numero }}</td>
+        <td>{{ nota.dataEmissao }}</td>
+        <td>{{ nota.cliente.nome }}</td>
+        <td>{{ nota.empresa.razaoSocial }}</td>
+        <td>{{ nota.quantidadeItens }}</td>
+        <td>{{ nota.valorTotal }}</td>
+        <td>{{ nota.status }}</td>
+        <td>
+            <button
+                type="button"
+                (click)="verDetalhes(nota.id)">
+                Detalhes
+            </button>
+        </td>
+      </tr>
+    }
+  </tbody>
+</table>
+
+@if (notaSelecionada(); as nota) {
+  <hr>
+
+  <h2>Nota {{ nota.numero }}</h2>
+
+  <p>Status: {{ nota.status }}</p>
+  <p>Cliente: {{ nota.cliente.nome }}</p>
+  <p>Empresa: {{ nota.empresa.razaoSocial }}</p>
+
+    @if (nota.status === 'Aberta') {
+        <h3>Adicionar Item</h3>
+
+        <form (ngSubmit)="adicionarItem()">
+            <div>
+                <label for="produto">Produto</label>
+
+                <select
+                id="produto"
+                name="produto"
+                [(ngModel)]="produtoId"
+                required
+                >
+                <option [ngValue]="0">Selecione um produto</option>
+
+                @for (produto of produtos(); track produto.id) {
+                    <option [ngValue]="produto.id">
+                    {{ produto.codigo }} - {{ produto.descricao }}
+                    </option>
+                }
+                </select>
+            </div>
+
+            <div>
+                <label for="quantidade">Quantidade</label>
+
+                <input
+                id="quantidade"
+                name="quantidade"
+                type="number"
+                min="1"
+                [(ngModel)]="quantidade"
+                required
+                >
+            </div>
+
+            <button type="submit">Adicionar Item</button>
+        </form>
+    }
+
+  <h3>Itens</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Código</th>
+        <th>Produto</th>
+        <th>Quantidade</th>
+        <th>Valor Unitário</th>
+        <th>Valor Total</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      @for (item of nota.itens; track item.id) {
+        <tr>
+            <td>{{ item.codigoProduto }}</td>
+            <td>{{ item.descricaoProduto }}</td>
+            <td>{{ item.quantidade }}</td>
+            <td>{{ item.valorUnitario }}</td>
+            <td>{{ item.valorTotal }}</td>
+            <td>
+                <!-- Evitando apresentar botão editar se o status da nota não for aberta -->
+                @if (nota.status === 'Aberta') {
+                    <button
+                        type="button"
+                        (click)="editarQuantidade(item)"
+                        >
+                        Editar quantidade
+                    </button>
+                    <button
+                        type="button"
+                        (click)="removerItem(item)"
+                        >
+                        Remover
+                    </button>
+                }
+
+            </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}
