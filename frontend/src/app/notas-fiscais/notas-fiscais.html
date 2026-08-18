@@ -107,7 +107,7 @@
                 <span
                   class="status-badge"
                   [class.status-open]="nota.status === 'Aberta'"
-                  [class.status-processed]="nota.status === 'Processada'"
+                  [class.status-processed]="nota.status === 'Fechada'"
                   [class.status-cancelled]="nota.status === 'Cancelada'"
                 >
                   {{ nota.status }}
@@ -141,7 +141,7 @@
         <span
           class="status-badge status-large"
           [class.status-open]="nota.status === 'Aberta'"
-          [class.status-processed]="nota.status === 'Processada'"
+          [class.status-processed]="nota.status === 'Fechada'"
           [class.status-cancelled]="nota.status === 'Cancelada'"
         >
           {{ nota.status }}
@@ -171,8 +171,9 @@
             class="btn btn-success"
             type="button"
             (click)="processarNota()"
+            [disabled]="processando"
           >
-            Processar Nota
+             {{ processando ? 'Processando...' : 'Imprimir Nota' }}
           </button>
         }
 

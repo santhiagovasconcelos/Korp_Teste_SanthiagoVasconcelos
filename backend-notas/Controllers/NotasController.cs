@@ -384,14 +384,14 @@ public class NotasController : ControllerBase
             var response = await client.PostAsJsonAsync(
                 "/api/estoque/baixa",
                 request);
-            
+
             // Se alguma baixa falhar, desfaz as baixas realizadas anteriormente.
             // Isso evita deixar o estoque parcialmente movimentado enquanto
             // a nota permanece com status Aberta.
             if (!response.IsSuccessStatusCode)
             {
                 foreach (var itemBaixado in itensBaixados)
-                 {
+                {
                     var estornoRequest = new
                     {
                         ProdutoId = itemBaixado.ProdutoId,
@@ -405,14 +405,14 @@ public class NotasController : ControllerBase
 
                 return BadRequest(
                 $"Não foi possível baixar o estoque do produto {item.CodigoProduto}. As baixas anteriores foram estornadas.");
-    
+
             }
             //adicionando itens para confirmar a baixa
             itensBaixados.Add(item);
         }
 
-        // Somente após todas as baixas terem sucesso a nota é considerada processada.
-        nota.Status = "Processada";
+        // Somente após todas as baixas terem sucesso a nota é considerada fechada.
+        nota.Status = "Fechada";
 
         await _context.SaveChangesAsync();
 
@@ -458,8 +458,8 @@ public class NotasController : ControllerBase
             });
         }
 
-        // Nota processada: os estoques precisam ser estornados antes do cancelamento.
-        if (nota.Status == "Processada")
+        // Nota Fechada: os estoques precisam ser estornados antes do cancelamento.
+        if (nota.Status == "Fechada")
         {
             var client = _httpClientFactory.CreateClient("ProdutosApi");
 

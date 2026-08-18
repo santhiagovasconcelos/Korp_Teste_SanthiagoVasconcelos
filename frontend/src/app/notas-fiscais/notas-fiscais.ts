@@ -9,9 +9,17 @@ import { Produto } from '../models/produto';
 import { ProdutoService } from '../services/produto';
 import { ItemNota } from '../models/item-nota';
 import { CurrencyPipe, DatePipe } from '@angular/common';
-//importando o RxJS para função dentro da consulta do saldo do estoque
-import { Subject, debounceTime, distinctUntilChanged, filter, switchMap } from 'rxjs';
 import { SaldoEstoque } from '../models/saldo-estoque';
+//importando o RxJS para função dentro da consulta do saldo do estoque
+import {
+  Subject,
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  delay,
+  finalize,
+  switchMap,
+} from 'rxjs';
 
 @Component({
   selector: 'app-notas-fiscais',
@@ -32,6 +40,8 @@ export class NotasFiscais implements OnInit {
 
   produtoId = 0;
   quantidade = 0;
+
+  processando = false;
 
   constructor(
     private notaFiscalService: NotaFiscalService,
@@ -322,24 +332,32 @@ export class NotasFiscais implements OnInit {
       return;
     }
 
-    this.notaFiscalService.processar(nota.id).subscribe({
-      next: () => {
-        this.carregarNotas();
-        this.verDetalhes(nota.id);
+    this.processando = true;
 
-        alert('Nota processada com sucesso.');
-      },
-      error: (erro) => {
-        console.error('Erro ao processar nota:', erro);
+    this.notaFiscalService
+      .processar(nota.id)
+      .pipe(
+        delay(1000),
+        finalize(() => (this.processando = false)),
+      )
+      .subscribe({
+        next: () => {
+          this.carregarNotas();
+          this.verDetalhes(nota.id);
 
-        const mensagem =
-          typeof erro.error === 'string'
-            ? erro.error
-            : (erro.error?.message ?? 'Não foi possível processar a nota.');
+          alert('Nota processada com sucesso.');
+        },
+        error: (erro) => {
+          console.error('Erro ao processar nota:', erro);
 
-        alert(mensagem);
-      },
-    });
+          const mensagem =
+            typeof erro.error === 'string'
+              ? erro.error
+              : (erro.error?.message ?? 'Não foi possível processar a nota.');
+
+          alert(mensagem);
+        },
+      });
   }
 
   cancelarNota(): void {
