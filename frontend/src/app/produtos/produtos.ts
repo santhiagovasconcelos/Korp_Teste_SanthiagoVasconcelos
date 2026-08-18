@@ -2,10 +2,11 @@ import { Component, OnInit, signal } from '@angular/core';
 import { Produto } from '../models/produto';
 import { ProdutoService } from '../services/produto';
 import { FormsModule } from '@angular/forms';
+import { CurrencyPipe } from '@angular/common';
 
 @Component({
   selector: 'app-produtos',
-  imports: [FormsModule],
+  imports: [FormsModule, CurrencyPipe],
   templateUrl: './produtos.html',
   styleUrl: './produtos.scss',
 })

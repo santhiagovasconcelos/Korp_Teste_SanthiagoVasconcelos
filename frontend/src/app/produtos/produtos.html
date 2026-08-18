@@ -1,100 +1,135 @@
-<h1>Produtos</h1>
-
-<h2>Novo Produto</h2>
-
-<form (ngSubmit)="salvarProduto()">
-
+<section class="page-header">
   <div>
-    <label for="codigo">Código</label>
-    <input
-      id="codigo"
-      name="codigo"
-      type="text"
-      [(ngModel)]="novoProduto.codigo"
-      required>
+    <h1>Produtos</h1>
+    <p>Gerencie os produtos disponíveis e seus respectivos saldos.</p>
+  </div>
+</section>
+
+<section class="card">
+  <div class="card-header">
+    <div>
+      <h2>{{ produtoEmEdicao ? 'Editar Produto' : 'Novo Produto' }}</h2>
+      <p>
+        {{
+          produtoEmEdicao
+            ? 'Atualize as informações do produto selecionado.'
+            : 'Cadastre um novo produto no catálogo.'
+        }}
+      </p>
+    </div>
   </div>
 
-  <div>
-    <label for="descricao">Descrição</label>
-    <input
-      id="descricao"
-      name="descricao"
-      type="text"
-      [(ngModel)]="novoProduto.descricao"
-      required>
+  <form
+    class="product-form"
+    (ngSubmit)="salvarProduto()"
+  >
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="codigo">Código</label>
+        <input
+          id="codigo"
+          name="codigo"
+          type="text"
+          [(ngModel)]="novoProduto.codigo"
+          required
+        >
+      </div>
+
+      <div class="form-field description-field">
+        <label for="descricao">Descrição</label>
+        <input
+          id="descricao"
+          name="descricao"
+          type="text"
+          [(ngModel)]="novoProduto.descricao"
+          required
+        >
+      </div>
+
+      <div class="form-field">
+        <label for="preco">Preço</label>
+        <input
+          id="preco"
+          name="preco"
+          type="number"
+          step="0.01"
+          min="0"
+          [(ngModel)]="novoProduto.preco"
+          required
+        >
+      </div>
+
+      <div class="form-field">
+        <label for="saldo">Saldo inicial</label>
+        <input
+          id="saldo"
+          name="saldo"
+          type="number"
+          min="0"
+          [(ngModel)]="novoProduto.saldo"
+          required
+        >
+      </div>
+    </div>
+
+    <div class="form-footer">
+      <button
+        class="btn btn-primary"
+        type="submit"
+      >
+        {{ produtoEmEdicao ? 'Salvar Alterações' : 'Cadastrar Produto' }}
+      </button>
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  <div class="card-header">
+    <div>
+      <h2>Produtos cadastrados</h2>
+      <p>Consulte e gerencie os produtos disponíveis no sistema.</p>
+    </div>
   </div>
 
-  <div>
-    <label for="preco">Preço</label>
-    <input
-      id="preco"
-      name="preco"
-      type="number"
-      step="0.01"
-      [(ngModel)]="novoProduto.preco"
-      required>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Descrição</th>
+          <th>Preço</th>
+          <th>Saldo</th>
+          <th class="actions-column">Ações</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (produto of produtos(); track produto.id) {
+          <tr>
+            <td class="code-cell">{{ produto.codigo }}</td>
+            <td>{{ produto.descricao }}</td>
+            <td>{{ produto.preco | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td>
+            <td>{{ produto.saldo }}</td>
+            <td class="actions">
+              <button
+                class="btn btn-secondary"
+                type="button"
+                (click)="editarProduto(produto)"
+              >
+                Editar
+              </button>
+
+              <button
+                class="btn btn-danger"
+                type="button"
+                (click)="excluirProduto(produto)"
+              >
+                Excluir
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
   </div>
-
-  <div>
-    <label for="saldo">Saldo inicial</label>
-    <input
-      id="saldo"
-      name="saldo"
-      type="number"
-      [(ngModel)]="novoProduto.saldo"
-      required>
-  </div>
-
-  <div>
-    <label>
-      <input
-        name="ativo"
-        type="checkbox"
-        [(ngModel)]="novoProduto.ativo">
-      Ativo
-    </label>
-  </div>
-
-  <button type="submit">
-    {{ produtoEmEdicao ? 'Salvar Alterações' : 'Cadastrar' }}
-  </button>
-
-</form>
-
-<table>
-  <thead>
-    <tr>
-      <th>Código</th>
-      <th>Descrição</th>
-      <th>Preço</th>
-      <th>Saldo</th>
-      <th>Status</th>
-      <th>Ações</th>
-    </tr>
-  </thead>
-
-  <tbody>
-    @for (produto of produtos(); track produto.id) {
-      <tr>
-        <td>{{ produto.codigo }}</td>
-        <td>{{ produto.descricao }}</td>
-        <td>{{ produto.preco }}</td>
-        <td>{{ produto.saldo }}</td>
-        <td>{{ produto.ativo ? 'Ativo' : 'Inativo' }}</td>
-        <td>
-          <button
-            type="button"
-            (click)="editarProduto(produto)">
-            Editar
-          </button>
-          
-          <button
-            type="button"
-            (click)="excluirProduto(produto)">
-            Excluir
-          </button>
-        </td>
-      </tr>
-    }
-  </tbody>
-</table>
+</section>

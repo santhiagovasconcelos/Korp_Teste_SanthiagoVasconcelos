@@ -1,24 +1,50 @@
-nav {
+.navbar {
+  width: 100%;
+  background-color: #172033;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 12%);
+}
+
+.navbar-content {
   display: flex;
   align-items: center;
-  gap: 24px;
-
-  padding: 16px 24px;
-
-  background-color: #1f2937;
+  max-width: 1400px;
+  height: 64px;
+  margin: 0 auto;
+  padding: 0 32px;
 }
 
-strong {
-  color: white;
+.brand {
+  margin-right: 48px;
+  color: #ffffff;
   font-size: 20px;
-  margin-right: 16px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
 }
 
-a {
-  color: white;
-  text-decoration: none;
-}
+.nav-links {
+  display: flex;
+  align-items: stretch;
+  height: 100%;
 
-a:hover {
-  text-decoration: underline;
+  a {
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    border-bottom: 3px solid transparent;
+    color: #cbd5e1;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: 0.2s ease;
+
+    &:hover {
+      background-color: rgb(255 255 255 / 6%);
+      color: #ffffff;
+    }
+
+    &.active {
+      border-bottom-color: #3b82f6;
+      color: #ffffff;
+    }
+  }
 }
