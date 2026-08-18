@@ -1,215 +1,335 @@
-<h1>Notas Fiscais</h1>
+  <section class="page-header">
+    <div>
+      <h1>Notas Fiscais</h1>
+      <p>Gerencie a emissão, os itens e o processamento das notas fiscais.</p>
+    </div>
+  </section>
 
-<h2>Nova Nota Fiscal</h2>
+  <section class="card">
+    <div class="card-header">
+      <div>
+        <h2>Nova Nota Fiscal</h2>
+        <p>Selecione o cliente e a empresa para criar uma nova nota.</p>
+      </div>
+    </div>
 
-<form (ngSubmit)="criarNota()">
-  <div>
-    <label for="cliente">Cliente</label>
-
-    <select
-      id="cliente"
-      name="cliente"
-      [(ngModel)]="clienteId"
-      required
+    <form
+      class="invoice-form"
+      (ngSubmit)="criarNota()"
     >
-      <option [ngValue]="0">Selecione um cliente</option>
+      <div class="form-grid">
+        <div class="form-field">
+          <label for="cliente">Cliente</label>
 
-      @for (cliente of clientes(); track cliente.id) {
-        <option [ngValue]="cliente.id">
-          {{ cliente.nome }}
-        </option>
-      }
-    </select>
-  </div>
+          <select
+            id="cliente"
+            name="cliente"
+            [(ngModel)]="clienteId"
+            required
+          >
+            <option [ngValue]="0">Selecione um cliente</option>
 
-  <div>
-    <label for="empresa">Empresa</label>
+            @for (cliente of clientes(); track cliente.id) {
+              <option [ngValue]="cliente.id">
+                {{ cliente.nome }}
+              </option>
+            }
+          </select>
+        </div>
 
-    <select
-      id="empresa"
-      name="empresa"
-      [(ngModel)]="empresaId"
-      required
-    >
-      <option [ngValue]="0">Selecione uma empresa</option>
+        <div class="form-field">
+          <label for="empresa">Empresa</label>
 
-      @for (empresa of empresas(); track empresa.id) {
-        <option [ngValue]="empresa.id">
-          {{ empresa.razaoSocial }}
-        </option>
-      }
-    </select>
-  </div>
+          <select
+            id="empresa"
+            name="empresa"
+            [(ngModel)]="empresaId"
+            required
+          >
+            <option [ngValue]="0">Selecione uma empresa</option>
 
-  <button type="submit">Criar Nota</button>
-</form>
+            @for (empresa of empresas(); track empresa.id) {
+              <option [ngValue]="empresa.id">
+                {{ empresa.razaoSocial }}
+              </option>
+            }
+          </select>
+        </div>
+      </div>
 
-<table>
-  <thead>
-    <tr>
-      <th>Número</th>
-      <th>Data</th>
-      <th>Cliente</th>
-      <th>Empresa</th>
-      <th>Itens</th>
-      <th>Valor Total</th>
-      <th>Status</th>
-      <th>Ações</th>
-    </tr>
-  </thead>
-
-  <tbody>
-    @for (nota of notas(); track nota.id) {
-      <tr>
-        <td>{{ nota.numero }}</td>
-        <td>{{ nota.dataEmissao }}</td>
-        <td>{{ nota.cliente.nome }}</td>
-        <td>{{ nota.empresa.razaoSocial }}</td>
-        <td>{{ nota.quantidadeItens }}</td>
-        <td>{{ nota.valorTotal }}</td>
-        <td>{{ nota.status }}</td>
-        <td>
-            <button
-                type="button"
-                (click)="verDetalhes(nota.id)">
-                Detalhes
-            </button>
-        </td>
-      </tr>
-    }
-  </tbody>
-</table>
-
-@if (notaSelecionada(); as nota) {
-  <hr>
-
-  <h2>Nota {{ nota.numero }}</h2>
-
-  <p>Status: {{ nota.status }}</p>
-  <p>Cliente: {{ nota.cliente.nome }}</p>
-  <p>Empresa: {{ nota.empresa.razaoSocial }}</p>
-    @if (nota.status !== 'Cancelada') {
+      <div class="form-actions">
         <button
-            type="button"
-            (click)="cancelarNota()"
+          class="btn btn-primary"
+          type="submit"
         >
-            Cancelar Nota
+          Criar Nota
         </button>
-    }
-    @if (nota.status === 'Aberta') {
+      </div>
+    </form>
+  </section>
+  <section class="card">
+    <div class="card-header">
+      <div>
+        <h2>Notas cadastradas</h2>
+        <p>Consulte o histórico e acompanhe o status das notas fiscais.</p>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>Data</th>
+            <th>Cliente</th>
+            <th>Empresa</th>
+            <th>Itens</th>
+            <th>Valor Total</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (nota of notas(); track nota.id) {
+            <tr>
+              <td>{{ nota.numero }}</td>
+              <td>
+                {{ nota.dataEmissao | date:'dd/MM/yyyy HH:mm':'':'pt-BR' }}
+              </td>
+              <td>{{ nota.cliente.nome }}</td>
+              <td>{{ nota.empresa.razaoSocial }}</td>
+              <td>{{ nota.quantidadeItens }}</td>
+              <td>
+                {{ nota.valorTotal | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+              </td>
+              <td>
+                <span
+                  class="status-badge"
+                  [class.status-open]="nota.status === 'Aberta'"
+                  [class.status-processed]="nota.status === 'Processada'"
+                  [class.status-cancelled]="nota.status === 'Cancelada'"
+                >
+                  {{ nota.status }}
+                </span>
+              </td>
+
+              <td>
+                <button
+                  class="btn btn-secondary"
+                  type="button"
+                  (click)="verDetalhes(nota.id)"
+                >
+                  Detalhes
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+  @if (notaSelecionada(); as nota) {
+      
+    <section class="card invoice-details">
+      <div class="details-header">
+        <div>
+          <span class="details-label">Nota Fiscal</span>
+          <h2>{{ nota.numero }}</h2>
+        </div>
+
+        <span
+          class="status-badge status-large"
+          [class.status-open]="nota.status === 'Aberta'"
+          [class.status-processed]="nota.status === 'Processada'"
+          [class.status-cancelled]="nota.status === 'Cancelada'"
+        >
+          {{ nota.status }}
+        </span>
+      </div>
+
+      <div class="details-grid">
+        <div class="detail-item">
+          <span>Cliente</span>
+          <strong>{{ nota.cliente.nome }}</strong>
+        </div>
+
+        <div class="detail-item">
+          <span>Empresa</span>
+          <strong>{{ nota.empresa.razaoSocial }}</strong>
+        </div>
+
+        <div class="detail-item">
+          <span>Quantidade de itens</span>
+          <strong>{{ nota.itens.length }}</strong>
+        </div>
+      </div>
+
+      <div class="invoice-actions">
         @if (nota.status === 'Aberta') {
-            <button
+          <button
+            class="btn btn-success"
             type="button"
             (click)="processarNota()"
-            >
+          >
             Processar Nota
-            </button>
+          </button>
         }
-        
-        <h3>Adicionar Item</h3>
 
-        <form (ngSubmit)="adicionarItem()">
-            <div>
-                <label for="produto">Produto</label>
+        @if (nota.status !== 'Cancelada') {
+          <button
+            class="btn btn-danger"
+            type="button"
+            (click)="cancelarNota()"
+          >
+            Cancelar Nota
+          </button>
+        }
+      </div>
+  <div class="section-divider"></div>
 
-                <select
-                id="produto"
-                name="produto"
-                [(ngModel)]="produtoId"
-                (ngModelChange)="produtoAlterado($event)"//Usado para o RxJS
-                required
-                >
-                <option [ngValue]="0">Selecione um produto</option>
+  @if (nota.status === 'Aberta') {
+    <div class="subsection-header">
+      <h3>Adicionar Item</h3>
+      <p>Selecione um produto e informe a quantidade desejada.</p>
+    </div>
 
-                @for (produto of produtos(); track produto.id) {
-                    <option [ngValue]="produto.id">
-                    {{ produto.codigo }} - {{ produto.descricao }}
-                    </option>
-                }
-                </select>
-            </div>
+    <form
+      class="item-form"
+      (ngSubmit)="adicionarItem()"
+    >
+      <div class="form-grid item-form-grid">
+        <div class="form-field">
+          <label for="produto">Produto</label>
 
-            <div>
-                <label for="quantidade">Quantidade</label>
+          <!-- Validação de estoque via RxJS -->
+          <select
+            id="produto"
+            name="produto"
+            [(ngModel)]="produtoId"
+            (ngModelChange)="produtoAlterado($event)"
+            required
+          >
+            <option [ngValue]="0">Selecione um produto</option>
 
-                <input
-                    id="quantidade"
-                    name="quantidade"
-                    type="number"
-                    min="1"
-                    [(ngModel)]="quantidade"
-                    (ngModelChange)="validarQuantidade()"//Usado para o RxJS
-                    required
-                >
+            @for (produto of produtos(); track produto.id) {
+              <option [ngValue]="produto.id">
+                {{ produto.codigo }} - {{ produto.descricao }}
+              </option>
+            }
+          </select>
+        </div>
 
-                @if (saldoProduto) {
-                    <p>Saldo em estoque: {{ saldoProduto.saldo }}</p>
+        <div class="form-field">
+          <label for="quantidade">Quantidade</label>
 
-                    @if (quantidadeJaNaNota() > 0) {
-                        <p>Quantidade já na nota: {{ quantidadeJaNaNota() }}</p>
-                    }
+          <!-- Validação de estoque via RxJS -->
+          <input
+            id="quantidade"
+            name="quantidade"
+            type="number"
+            min="1"
+            [(ngModel)]="quantidade"
+            (ngModelChange)="validarQuantidade()"
+            required
+          >
+        </div>
+      </div>
 
-                    <p>
-                        Disponível para adicionar:
-                        {{ saldoDisponivelParaAdicionar() }}
-                    </p>
+      @if (saldoProduto) {
+        <div class="stock-info">
+          <div>
+            <span>Saldo em estoque</span>
+            <strong>{{ saldoProduto.saldo }}</strong>
+          </div>
 
-                    @if (!saldoSuficiente) {
-                        <p>Saldo insuficiente para a quantidade informada.</p>
-                    }
-                }
-            </div>
-            
-            <button
-                type="submit"
-                [disabled]="!saldoSuficiente"
-            >
-                Adicionar Item
-            </button>
-        </form>
-    }
+          <div>
+            <span>Já na nota</span>
+            <strong>{{ quantidadeJaNaNota() }}</strong>
+          </div>
 
-  <h3>Itens</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>Código</th>
-        <th>Produto</th>
-        <th>Quantidade</th>
-        <th>Valor Unitário</th>
-        <th>Valor Total</th>
-        <th>Ações</th>
-      </tr>
-    </thead>
+          <div>
+            <span>Disponível para adicionar</span>
+            <strong>{{ saldoDisponivelParaAdicionar() }}</strong>
+          </div>
+        </div>
 
-    <tbody>
-      @for (item of nota.itens; track item.id) {
-        <tr>
-            <td>{{ item.codigoProduto }}</td>
-            <td>{{ item.descricaoProduto }}</td>
-            <td>{{ item.quantidade }}</td>
-            <td>{{ item.valorUnitario }}</td>
-            <td>{{ item.valorTotal }}</td>
-            <td>
-                <!-- Evitando apresentar botão editar se o status da nota não for aberta -->
-                @if (nota.status === 'Aberta') {
-                    <button
+        @if (!saldoSuficiente) {
+          <div class="stock-warning">
+            Saldo insuficiente para a quantidade informada.
+          </div>
+        }
+      }
+
+      <div class="form-actions">
+        <button
+          class="btn btn-primary"
+          type="submit"
+          [disabled]="!saldoSuficiente"
+        >
+          Adicionar Item
+        </button>
+      </div>
+    </form>
+  }
+
+  <div class="section-divider"></div>
+    <div class="subsection-header">
+      <h3>Itens da Nota</h3>
+      <p>Produtos vinculados à nota fiscal selecionada.</p>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Produto</th>
+            <th>Quantidade</th>
+            <th>Valor Unitário</th>
+            <th>Valor Total</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (item of nota.itens; track item.id) {
+            <tr>
+                <td class="code-cell">{{ item.codigoProduto }}</td>
+                <td>{{ item.descricaoProduto }}</td>
+                <td>{{ item.quantidade }}</td>
+                <td>
+                  {{ item.valorUnitario | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+                </td>
+
+                <td>
+                  {{ item.valorTotal | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+                </td>
+                <td>
+                  @if (nota.status === 'Aberta') {
+                    <div class="actions">
+                      <button
+                        class="btn btn-secondary"
                         type="button"
                         (click)="editarQuantidade(item)"
-                        >
+                      >
                         Editar quantidade
-                    </button>
-                    <button
+                      </button>
+
+                      <button
+                        class="btn btn-danger"
                         type="button"
                         (click)="removerItem(item)"
-                        >
+                      >
                         Remover
-                    </button>
-                }
-
-            </td>
-        </tr>
-      }
-    </tbody>
-  </table>
+                      </button>
+                    </div>
+                  }
+                </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
 }

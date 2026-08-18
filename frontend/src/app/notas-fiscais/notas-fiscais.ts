@@ -8,13 +8,14 @@ import { Empresa } from '../models/empresa';
 import { Produto } from '../models/produto';
 import { ProdutoService } from '../services/produto';
 import { ItemNota } from '../models/item-nota';
+import { CurrencyPipe, DatePipe } from '@angular/common';
 //importando o RxJS para função dentro da consulta do saldo do estoque
-import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
+import { Subject, debounceTime, distinctUntilChanged, filter, switchMap } from 'rxjs';
 import { SaldoEstoque } from '../models/saldo-estoque';
 
 @Component({
   selector: 'app-notas-fiscais',
-  imports: [FormsModule],
+  imports: [FormsModule, CurrencyPipe, DatePipe],
   templateUrl: './notas-fiscais.html',
   styleUrl: './notas-fiscais.scss',
 })
@@ -55,6 +56,7 @@ export class NotasFiscais implements OnInit {
       .pipe(
         debounceTime(300),
         distinctUntilChanged(),
+        filter((produtoId) => produtoId > 0),
         switchMap((produtoId) => this.produtoService.consultarSaldo(produtoId)),
       )
       .subscribe({
@@ -166,7 +168,11 @@ export class NotasFiscais implements OnInit {
         this.verDetalhes(nota.id);
 
         this.produtoId = 0;
-        this.quantidade = 1;
+        this.quantidade = 0;
+        this.saldoProduto = null;
+        this.saldoSuficiente = false;
+
+        this.produtoSelecionado$.next(0);
       },
       error: (erro) => {
         console.error('Erro ao adicionar item:', erro);
