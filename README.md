@@ -369,6 +369,107 @@ Essa referência é utilizada para impedir que uma mesma operação gere movimen
 
 No frontend, RxJS é utilizado para controlar a consulta de saldo durante a seleção dos produtos, reduzindo chamadas desnecessárias à API e permitindo validar a disponibilidade antes do processamento da nota.
 
+## Detalhamento técnico
+
+Esta seção apresenta os principais aspectos técnicos da solução, conforme solicitado na especificação do desafio.
+
+### Ciclo de vida do Angular
+
+Foi utilizado o ciclo de vida `OnInit`, por meio da implementação da interface `OnInit` e do método `ngOnInit()`.
+
+O `ngOnInit()` é utilizado para realizar as inicializações necessárias após a criação dos componentes, como o carregamento inicial de produtos, clientes, empresas e notas fiscais.
+
+Na tela de notas fiscais, também é utilizado para configurar a inscrição no fluxo RxJS responsável pela consulta e validação do saldo do produto selecionado.
+
+### Uso de RxJS
+
+Foi utilizado **RxJS** no frontend para tratar de forma reativa a seleção de produtos e a consulta de saldo em estoque.
+
+A seleção do produto é enviada para um fluxo reativo utilizando `Subject`, que posteriormente utiliza operadores como:
+
+- `debounceTime`: evita consultas imediatas em sequência;
+- `distinctUntilChanged`: evita repetir a consulta quando o produto selecionado não foi alterado;
+- `switchMap`: realiza a consulta de saldo e substitui uma requisição anterior caso uma nova seleção seja realizada.
+
+Após o retorno da API, o saldo disponível é utilizado para validar a quantidade informada antes da inclusão do item na nota.
+
+### Bibliotecas utilizadas
+
+No frontend foram utilizados principalmente os recursos do próprio ecossistema Angular:
+
+- **Angular Forms**: utilizado nos formulários e no data binding através de `ngModel`;
+- **Angular Router**: utilizado para navegação entre as telas da aplicação;
+- **Angular HttpClient**: utilizado para comunicação com os microsserviços através das APIs REST;
+- **RxJS**: utilizado nos fluxos reativos, principalmente na validação de estoque;
+- **Angular Common**: utilizado para recursos como `CurrencyPipe` e `DatePipe`.
+
+No backend foram utilizados:
+
+- **ASP.NET Core**: desenvolvimento das APIs REST;
+- **Entity Framework Core**: ORM utilizado para persistência e acesso aos dados;
+- **Npgsql Entity Framework Core Provider**: integração do Entity Framework Core com PostgreSQL.
+
+### Componentes visuais
+
+Não foi utilizada uma biblioteca externa de componentes visuais.
+
+A interface foi construída utilizando **HTML e CSS**, juntamente com os recursos de template e componentes do próprio Angular.
+
+Essa decisão foi tomada para manter a solução leve e evitar dependências adicionais que não fossem necessárias para o escopo do projeto.
+
+### Frameworks utilizados no C#
+
+O backend foi desenvolvido utilizando **ASP.NET Core**, com APIs REST separadas em dois serviços:
+
+- serviço de produtos e estoque;
+- serviço de notas fiscais.
+
+Para persistência dos dados foi utilizado **Entity Framework Core**, juntamente com migrations para criação e evolução da estrutura dos bancos PostgreSQL.
+
+A separação dos serviços mantém as responsabilidades de estoque e faturamento independentes, evitando acesso direto ao banco de dados de outro serviço.
+
+### Tratamento de erros e exceções no backend
+
+O backend realiza validações antes da execução das principais operações e utiliza respostas HTTP adequadas para indicar o resultado das requisições.
+
+Entre os cenários tratados estão:
+
+- recurso não encontrado;
+- tentativa de realizar operações inválidas de acordo com o status da nota;
+- tentativa de processar nota sem itens;
+- saldo insuficiente em estoque;
+- prevenção de saldo negativo;
+- prevenção de movimentações duplicadas;
+- falhas de comunicação entre os serviços.
+
+Os controllers retornam respostas HTTP de acordo com cada situação, como `NotFound`, `BadRequest`, `NoContent` e respostas de sucesso.
+
+No frontend, erros nas chamadas HTTP são tratados nas inscrições dos `Observable`, permitindo registrar a falha e impedir que a interface considere uma operação malsucedida como concluída.
+
+### Uso de LINQ
+
+Foi utilizado **LINQ** no backend para consultas e manipulação dos dados através do Entity Framework Core.
+
+Um exemplo é a listagem de produtos ativos:
+
+```csharp
+var produtos = await _context.Produtos
+    .Where(p => p.Ativo)
+    .ToListAsync();
+```
+
+Nesse caso, o `Where` é utilizado para filtrar somente os produtos ativos antes da consulta ser executada no banco de dados.
+
+LINQ também é utilizado em outras consultas da aplicação para localizar, filtrar e validar informações armazenadas através do Entity Framework Core.
+
+### Gerenciamento de dependências
+
+Como a solução foi desenvolvida utilizando C# em vez de Golang, o item de gerenciamento de dependências do Golang não se aplica.
+
+No backend, as dependências .NET são gerenciadas através do **NuGet** e dos arquivos `.csproj`.
+
+No frontend, as dependências são gerenciadas através do **npm**, com as versões e pacotes do projeto definidos no arquivo `package.json`.
+
 ## Melhorias futuras
 
 Algumas melhorias que poderiam ser implementadas em uma evolução do projeto:
