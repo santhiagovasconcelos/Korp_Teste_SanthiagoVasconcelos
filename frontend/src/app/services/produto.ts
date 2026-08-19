@@ -21,8 +21,8 @@ export class ProdutoService {
     return this.http.post<Produto>(this.apiUrl, produto);
   }
 
-  editar(produto: Produto): Observable<Produto> {
-    return this.http.put<Produto>(`${this.apiUrl}/${produto.id}`, produto);
+  editar(produto: Produto): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${produto.id}`, produto);
   }
 
   excluir(id: number): Observable<void> {

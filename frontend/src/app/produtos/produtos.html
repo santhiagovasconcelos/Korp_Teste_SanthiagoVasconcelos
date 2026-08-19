@@ -60,15 +60,25 @@
       </div>
 
       <div class="form-field">
-        <label for="saldo">Saldo inicial</label>
+        <label for="saldo">
+          {{ produtoEmEdicao ? 'Saldo atual' : 'Saldo inicial' }}
+        </label>
+
         <input
           id="saldo"
           name="saldo"
           type="number"
           min="0"
           [(ngModel)]="novoProduto.saldo"
+          [disabled]="produtoEmEdicao !== null"
           required
         >
+
+        @if (produtoEmEdicao) {
+          <small class="field-hint">
+            O saldo é atualizado pelas movimentações de estoque.
+          </small>
+        }
       </div>
     </div>
 
